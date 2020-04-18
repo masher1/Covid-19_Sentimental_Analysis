@@ -7,20 +7,10 @@ import csv
 import time
 import datetime
 
-api_id = config.api_id
-api_secret = config.api_secret;
-
-reddit = praw.Reddit(client_id = api_id,
-                     client_secret = api_secret,
-                     user_agent='<console:reddit_bot:0.0.1')
-
-#TO-DO: Parse posts from time/date with certain inputs, ex what countries we parse
-#Global Variables
-query = "Italy" # Country Name
-after = "1580515200" #Saturday, February 1, 2020 12:00:00 AM
-before = "1585699200" #Wednesday, April 1, 2020 12:00:00 AM
+# Global Variables
 subCount = 0
 subStats = {}
+
 
 def getPushshiftData(query, after, before):
     url = 'https://api.pushshift.io/reddit/search/submission/?title='+str(query)+'&size=1000&after='+str(after)+'&before='+str(before)+'&subreddit=coronavirus'
@@ -28,7 +18,6 @@ def getPushshiftData(query, after, before):
     r = requests.get(url)
     data = json.loads(r.text)
     return data['data']
-
 
 def collectSubData(subm):
     subData = list()  # list to store data points
@@ -52,23 +41,6 @@ def collectSubData(subm):
 #================================Malkiel
 #Unix Time: https://www.epochconverter.com/
 
-data = getPushshiftData(query, after, before)
-while len(data) > 0:
-    for submission in data:
-        collectSubData(submission)
-        subCount += 1
-    # Calls getPushshiftData() with the created date of the last submission
-    print(len(data))
-    print(str(datetime.datetime.fromtimestamp(data[-1]['created_utc'])))
-    after = data[-1]['created_utc']
-    data = getPushshiftData(query, after, before)
-print(len(data))
-
-print(str(len(subStats)) + " submissions have added to list")
-print("1st entry is:")
-print(list(subStats.values())[0][0][1] + " created: " + str(list(subStats.values())[0][0][5]))
-print("Last entry is:")
-print(list(subStats.values())[-1][0][1] + " created: " + str(list(subStats.values())[-1][0][5]))
 
 #Upload data to a CSV file
 def updateSubs_file():
@@ -87,9 +59,42 @@ def updateSubs_file():
 
         print(str(upload_count) + " submissions have been uploaded")
 
-updateSubs_file()
 
 
+if __name__ == '__main__':
+    api_id = config.api_id
+    api_secret = config.api_secret;
+
+    reddit = praw.Reddit(client_id=api_id,
+                         client_secret=api_secret,
+                         user_agent='<console:reddit_bot:0.0.1')
+
+    # TO-DO: Parse posts from time/date with certain inputs, ex what countries we parse
+
+    query = "Italy"  # Country Name
+    after = "1580515200"  # Saturday, February 1, 2020 12:00:00 AM
+    before = "1585699200"  # Wednesday, April 1, 2020 12:00:00 AM
+
+    data = getPushshiftData(query, after, before)
+    print(len(data))
+
+    while len(data) > 0:
+        for submission in data:
+            collectSubData(submission)
+            subCount += 1
+        # Calls getPushshiftData() with the created date of the last submission
+        print(len(data))
+        print(str(datetime.datetime.fromtimestamp(data[-1]['created_utc'])))
+        after = data[-1]['created_utc']
+        data = getPushshiftData(query, after, before)
+
+    print(str(len(subStats)) + " submissions have added to list")
+    print("1st entry is:")
+    print(list(subStats.values())[0][0][1] + " created: " + str(list(subStats.values())[0][0][5]))
+    print("Last entry is:")
+    print(list(subStats.values())[-1][0][1] + " created: " + str(list(subStats.values())[-1][0][5]))
+
+    updateSubs_file()
 # for submission in reddit.subreddit('coronavirus').hot(limit=1000):
 #     print(submission.title)
 #     print("-----------------")
