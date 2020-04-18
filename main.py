@@ -78,9 +78,22 @@ if __name__ == '__main__':
     data = getPushshiftData(query, after, before)
     print(len(data))
 
+    positive = ["recover","decline","vaccine","antibody","praise", "cases fall","lowest"]
+    negative = ["death","test positive","close","shut down","lost","die","late","decease","highest"] 
+
+    sentimentScore = 0.0
+    sentimentQuantity = len(data) 
+
     while len(data) > 0:
         for submission in data:
             collectSubData(submission)
+
+            title = submission['data']
+            if any(word in title for word in positive): #gets score for positive title
+              sentimentScore += 1.0
+            if any(word in title for word in negative): #gets score for negative title
+              sentimentScore -= 1.0
+
             subCount += 1
         # Calls getPushshiftData() with the created date of the last submission
         print(len(data))
@@ -88,6 +101,8 @@ if __name__ == '__main__':
         after = data[-1]['created_utc']
         data = getPushshiftData(query, after, before)
 
+    sentimentScore = sentimentScore / sentimentQuantity
+    print("Score: "+sentimentScore)
     print(str(len(subStats)) + " submissions have added to list")
     print("1st entry is:")
     print(list(subStats.values())[0][0][1] + " created: " + str(list(subStats.values())[0][0][5]))
@@ -118,8 +133,3 @@ if __name__ == '__main__':
 #   postURL = post.url #url the post links to
 #   postNumComments = post.num_comments #number of comments in the post
 #   postComments = post.comments(limit=5) #provides list of comments
-#   #==============================
-#   postSentiment = 0 #TODO
-#   #==============================
-
-
