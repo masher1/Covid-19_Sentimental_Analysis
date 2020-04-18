@@ -1,5 +1,11 @@
 import praw
 import config
+import pandas as pd
+import requests
+import json
+import csv
+import time
+import datetime
 
 api_id = config.api_id
 api_secret = config.api_secret;
@@ -9,18 +15,85 @@ reddit = praw.Reddit(client_id = api_id,
                      user_agent='<console:reddit_bot:0.0.1')
 
 #TO-DO: Parse posts from time/date with certain inputs, ex what countries we parse
+#Global Variables
+query = "Italy" # Country Name
+after = "1580515200" #Saturday, February 1, 2020 12:00:00 AM
+before = "1585699200" #Wednesday, April 1, 2020 12:00:00 AM
+subCount = 0
+subStats = {}
 
-print(api_id)
-print(api_secret)
+def getPushshiftData(query, after, before):
+    url = 'https://api.pushshift.io/reddit/search/submission/?title='+str(query)+'&size=1000&after='+str(after)+'&before='+str(before)+'&subreddit=coronavirus'
+    print(url)
+    r = requests.get(url)
+    data = json.loads(r.text)
+    return data['data']
 
+
+def collectSubData(subm):
+    subData = list()  # list to store data points
+    title = subm['title']
+    url = subm['url']
+    try:
+        flair = subm['link_flair_text']
+    except KeyError:
+        flair = "NaN"
+    author = subm['author']
+    sub_id = subm['id']
+    score = subm['score']
+    body = subm['selftext']
+    created = datetime.datetime.fromtimestamp(subm['created_utc'])  # 1520561700.0
+    numComms = subm['num_comments']
+    permalink = subm['permalink']
+
+    subData.append((sub_id, title, body, url, created, flair))
+    subStats[sub_id] = subData
 
 #================================Malkiel
 #Unix Time: https://www.epochconverter.com/
 
+data = getPushshiftData(query, after, before)
+while len(data) > 0:
+    for submission in data:
+        collectSubData(submission)
+        subCount += 1
+    # Calls getPushshiftData() with the created date of the last submission
+    print(len(data))
+    print(str(datetime.datetime.fromtimestamp(data[-1]['created_utc'])))
+    after = data[-1]['created_utc']
+    data = getPushshiftData(query, after, before)
+print(len(data))
 
-for submission in reddit.subreddit('coronavirus').hot(limit=1000):
-    print(submission.title)
-    print("-----------------")
+print(str(len(subStats)) + " submissions have added to list")
+print("1st entry is:")
+print(list(subStats.values())[0][0][1] + " created: " + str(list(subStats.values())[0][0][5]))
+print("Last entry is:")
+print(list(subStats.values())[-1][0][1] + " created: " + str(list(subStats.values())[-1][0][5]))
+
+#Upload data to a CSV file
+def updateSubs_file():
+    upload_count = 0
+    ts = time.time()
+    readable_time = datetime.datetime.fromtimestamp(ts).isoformat()
+    filename = "DataCollection_" + query + ".csv"
+    file = filename
+    with open(file, 'w', newline='', encoding='utf-8') as file:
+        a = csv.writer(file, delimiter=',')
+        headers = ["Post ID", "Title", "Body", "Url", "Publish Date", "Flair"]
+        a.writerow(headers)
+        for sub in subStats:
+            a.writerow(subStats[sub][0])
+            upload_count += 1
+
+        print(str(upload_count) + " submissions have been uploaded")
+
+updateSubs_file()
+
+
+# for submission in reddit.subreddit('coronavirus').hot(limit=1000):
+#     print(submission.title)
+#     print("-----------------")
+
     #https://api.pushshift.io/reddit/search/submission/?subreddit=coronavirus&sort_type=created_utc&size=500&after=90d&before=20d
 # listOfPosts = [reddit.subreddit("coronavirus")(limit=1)]#getPostSomehow(), TO-DO
 #================================
