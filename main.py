@@ -8,8 +8,8 @@ import time
 import datetime
 
 # Global Variables
-subCount = 0
 subStats = {}
+small_data = []
 
 
 def getPushshiftData(query, after, before):
@@ -57,8 +57,19 @@ def updateSubs_file():
             a.writerow(subStats[sub][0])
             upload_count += 1
 
-        print(str(upload_count) + " submissions have been uploaded")
+        # for sub in subStats:
+        #     for items in range(len(subStats[sub])):
+        #         a.writerow(subStats[sub][items])
+        #         upload_count += 1
 
+        # for sub in range(len(small_data)):
+        #     for items in range(len(small_data[sub])):
+        #         a.writerow(small_data[sub][items])
+        #         #a.writerow(subStats[sub][0])
+        #         upload_count += 1
+        #     a.writerow("")
+        #     a.writerow("")
+        print(str(upload_count) + " submissions have been uploaded")
 
 
 if __name__ == '__main__':
@@ -69,67 +80,61 @@ if __name__ == '__main__':
                          client_secret=api_secret,
                          user_agent='<console:reddit_bot:0.0.1')
 
-    # TO-DO: Parse posts from time/date with certain inputs, ex what countries we parse
-
+    # Parse posts from time/date with certain inputs, ex what countries we parse
+    # https://api.pushshift.io/reddit/search/submission/?subreddit=coronavirus&sort_type=created_utc&size=500&after=90d&before=20d
     query = "Italy"  # Country Name
-    after = "1580515200"  # Saturday, February 1, 2020 12:00:00 AM
-    before = "1585699200"  # Wednesday, April 1, 2020 12:00:00 AM
+    weeks = [1580515200, 1581120000, 1581724800, 1582329600, 1582934400, 1583539200, 1584144000, 1584748800, 1585353600, 1585958400, 1586563200] #Feb - Early Apr
+    weekNum = 0
+    big_data = []
+    while (weekNum < len(weeks)-1):
+        data = getPushshiftData(query, weeks[weekNum], weeks[weekNum+1])
+        print("Number of submissions for week #" + str(weekNum+1) + ": " + str(len(data)))
+        big_data.append(data)
+        for submissions in data:
+            collectSubData(submissions)
+        weekNum += 1
 
-    data = getPushshiftData(query, after, before)
-    print(len(data))
-
+    print("Number of weeks gathered in total: " + str(len(big_data)))
+    small_data = big_data
     positive = ["recover","decline","vaccine","antibody","praise", "cases fall","lowest"]
     negative = ["death","test positive","close","shut down","lost","die","late","decease","highest"] 
 
+    sentimentScores = []
+
+    iterateNum = 0
     sentimentScore = 0.0
-    sentimentQuantity = len(data) 
 
-    while len(data) > 0:
-        for submission in data:
-            collectSubData(submission)
+    while big_data:
+        sentimentQuantity = len(big_data[iterateNum])
+        sentimentScores = sentimentQuantity
+        iterateNum += 1
+        if (iterateNum >= len(big_data) - 1):
+            break
 
-            title = submission['data']
-            if any(word in title for word in positive): #gets score for positive title
-              sentimentScore += 1.0
-            if any(word in title for word in negative): #gets score for negative title
-              sentimentScore -= 1.0
+    iterateNum = 0
 
-            subCount += 1
+    #while (iterateNum < len(big_data[iterateNum]) - 1):
+    # for week_data in big_data[iterateNum]:
+    #     for submission in week_data:
+    #             title = submission['title']
+    #             #TODO change the sentiment analysis structure
+    #             if any(word in title for word in positive): #gets score for positive title
+    #               sentimentScore += 1.0
+    #             if any(word in title for word in negative): #gets score for negative title
+    #               sentimentScore -= 1.0
+
         # Calls getPushshiftData() with the created date of the last submission
-        print(len(data))
-        print(str(datetime.datetime.fromtimestamp(data[-1]['created_utc'])))
-        after = data[-1]['created_utc']
-        data = getPushshiftData(query, after, before)
+        #print("i am length" + str(len(big_data[iterateNum])))
+        # print(str(datetime.datetime.fromtimestamp(big_data[iterateNum][-1]['created_utc'])))
+        # after = big_data[iterateNum][-1]['created_utc']
+        # before = big_data[iterateNum][-1]['created_utc']
+        # data = getPushshiftData(query, after, before)
+        # #big_data.append(data)
+        # iterateNum += 1
 
     sentimentScore = sentimentScore / sentimentQuantity
-    print("Score: "+sentimentScore)
-    print(str(len(subStats)) + " submissions have added to list")
-    print("1st entry is:")
-    print(list(subStats.values())[0][0][1] + " created: " + str(list(subStats.values())[0][0][5]))
-    print("Last entry is:")
-    print(list(subStats.values())[-1][0][1] + " created: " + str(list(subStats.values())[-1][0][5]))
+    print("Score: "+str(sentimentScore))
+    count = sum([len(listElem) for listElem in small_data])
+    print(str(count) + " submissions have been added to list")
 
     updateSubs_file()
-# for submission in reddit.subreddit('coronavirus').hot(limit=1000):
-#     print(submission.title)
-#     print("-----------------")
-
-    #https://api.pushshift.io/reddit/search/submission/?subreddit=coronavirus&sort_type=created_utc&size=500&after=90d&before=20d
-# listOfPosts = [reddit.subreddit("coronavirus")(limit=1)]#getPostSomehow(), TO-DO
-#================================
-
-# numPosts = 0 #for daily score breakdown
-#
-# for post in listOfPosts:
-#   peoplePosted = [] #keep track of UNIQUE posters
-#
-#   if post.author not in peoplePosted: #if not in list, add to day count
-#     numPosts = numPosts + 1
-#
-#   peoplePosted.append(post.author)
-#
-#   postName = post.name #title of post
-#   postScore = post.score #karma on the posts
-#   postURL = post.url #url the post links to
-#   postNumComments = post.num_comments #number of comments in the post
-#   postComments = post.comments(limit=5) #provides list of comments
