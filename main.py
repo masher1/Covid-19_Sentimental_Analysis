@@ -57,8 +57,8 @@ def updateSubs_file():
         print(str(upload_count) + " submissions have been uploaded")
 
 if __name__ == '__main__':
-    api_id = "rezu8NeSSbAqQw"
-    api_secret = "ogniJ3HqR5ORM_4o4H0x6p9q5OE"
+    api_id = "rezu8NeSSbAqQw" #EXPIRED
+    api_secret = "ogniJ3HqR5ORM_4o4H0x6p9q5OE" #EXPIRED
 
     reddit = praw.Reddit(client_id=api_id,
                          client_secret=api_secret,
