@@ -1,10 +1,9 @@
-import config
-import pandas as pd
-import requests
-import json
 import csv
-import time
 import datetime
+import json
+import time
+
+import requests
 from textblob import TextBlob
 
 # Global Variables
@@ -53,7 +52,7 @@ def updateSubs_file():
         for sub in subStats:
              a.writerow(subStats[sub][0])
              upload_count += 1
-        print(str(upload_count) + " submissions have been uploaded")
+        print(str(upload_count) + " submissions have been uploaded to " + filename)
 
 #Main Method
 if __name__ == '__main__':
@@ -71,8 +70,7 @@ if __name__ == '__main__':
             collectSubData(submissions)
         weekNum += 1
 
-    print("Number of weeks gathered in total: " + str(len(big_data)))
-small    
+    print("\nNumber of weeks gathered in total: " + str(len(big_data)))
     iterateNum = 0
    
     #Perform sentiment analysis on the title of each post
