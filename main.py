@@ -6,11 +6,10 @@ import json
 import csv
 import time
 import datetime
-
+from textblob import TextBlob
 # Global Variables
 subStats = {}
 small_data = []
-
 
 def getPushshiftData(query, after, before):
     url = 'https://api.pushshift.io/reddit/search/submission/?title='+str(query)+'&size=1000&after='+str(after)+'&before='+str(before)+'&subreddit=coronavirus'
@@ -20,8 +19,11 @@ def getPushshiftData(query, after, before):
     return data['data']
 
 def collectSubData(subm):
+
     subData = list()  # list to store data points
     title = subm['title']
+    titleBlob = TextBlob(title)
+    sentiment_Score = titleBlob.sentiment.polarity
     url = subm['url']
     try:
         flair = subm['link_flair_text']
@@ -34,13 +36,8 @@ def collectSubData(subm):
     created = datetime.datetime.fromtimestamp(subm['created_utc'])  # 1520561700.0
     numComms = subm['num_comments']
     permalink = subm['permalink']
-
-    subData.append((sub_id, title, body, url, created, flair))
+    subData.append((sub_id, title, body, url, created, flair,sentiment_Score))
     subStats[sub_id] = subData
-
-#================================Malkiel
-#Unix Time: https://www.epochconverter.com/
-
 
 #Upload data to a CSV file
 def updateSubs_file():
@@ -51,41 +48,27 @@ def updateSubs_file():
     file = filename
     with open(file, 'w', newline='', encoding='utf-8') as file:
         a = csv.writer(file, delimiter=',')
-        headers = ["Post ID", "Title", "Body", "Url", "Publish Date", "Flair"]
+        headers = ["Post ID", "Title", "Body", "Url", "Publish Date", "Flair", "sentimentScore"]
         a.writerow(headers)
         for sub in subStats:
-            a.writerow(subStats[sub][0])
-            upload_count += 1
+             a.writerow(subStats[sub][0])
+             upload_count += 1
 
-        # for sub in subStats:
-        #     for items in range(len(subStats[sub])):
-        #         a.writerow(subStats[sub][items])
-        #         upload_count += 1
-
-        # for sub in range(len(small_data)):
-        #     for items in range(len(small_data[sub])):
-        #         a.writerow(small_data[sub][items])
-        #         #a.writerow(subStats[sub][0])
-        #         upload_count += 1
-        #     a.writerow("")
-        #     a.writerow("")
         print(str(upload_count) + " submissions have been uploaded")
 
-
 if __name__ == '__main__':
-    api_id = config.api_id
-    api_secret = config.api_secret;
+    api_id = "rezu8NeSSbAqQw"
+    api_secret = "ogniJ3HqR5ORM_4o4H0x6p9q5OE"
 
     reddit = praw.Reddit(client_id=api_id,
                          client_secret=api_secret,
                          user_agent='<console:reddit_bot:0.0.1')
-
-    # Parse posts from time/date with certain inputs, ex what countries we parse
-    # https://api.pushshift.io/reddit/search/submission/?subreddit=coronavirus&sort_type=created_utc&size=500&after=90d&before=20d
-    query = "Italy"  # Country Name
+    query = "Italy"  # Country Name [21 dec 1576946801,28 dec 1577551601, jan 4 1578156401,jan 11 1578761201,jan 18 1579366001,jan 25 1579970801]
     weeks = [1580515200, 1581120000, 1581724800, 1582329600, 1582934400, 1583539200, 1584144000, 1584748800, 1585353600, 1585958400, 1586563200] #Feb - Early Apr
     weekNum = 0
     big_data = []
+
+    # make API call to get all post from each week and put them into bigData ==> list[list[Object{}],list[Object{}],...]
     while (weekNum < len(weeks)-1):
         data = getPushshiftData(query, weeks[weekNum], weeks[weekNum+1])
         print("Number of submissions for week #" + str(weekNum+1) + ": " + str(len(data)))
@@ -96,9 +79,6 @@ if __name__ == '__main__':
 
     print("Number of weeks gathered in total: " + str(len(big_data)))
     small_data = big_data
-    positive = ["recover","decline","vaccine","antibody","praise", "cases fall","lowest"]
-    negative = ["death","test positive","close","shut down","lost","die","late","decease","highest"] 
-
     sentimentScores = []
 
     iterateNum = 0
@@ -113,24 +93,12 @@ if __name__ == '__main__':
 
     iterateNum = 0
 
-    #while (iterateNum < len(big_data[iterateNum]) - 1):
-    # for week_data in big_data[iterateNum]:
-    #     for submission in week_data:
-    #             title = submission['title']
-    #             #TODO change the sentiment analysis structure
-    #             if any(word in title for word in positive): #gets score for positive title
-    #               sentimentScore += 1.0
-    #             if any(word in title for word in negative): #gets score for negative title
-    #               sentimentScore -= 1.0
+    while (iterateNum < len(big_data) - 1):
+        for submission in big_data[iterateNum]:
+            title = TextBlob(submission['title'])
+            submission['sentimentScore'] = title.sentiment.polarity
 
-        # Calls getPushshiftData() with the created date of the last submission
-        #print("i am length" + str(len(big_data[iterateNum])))
-        # print(str(datetime.datetime.fromtimestamp(big_data[iterateNum][-1]['created_utc'])))
-        # after = big_data[iterateNum][-1]['created_utc']
-        # before = big_data[iterateNum][-1]['created_utc']
-        # data = getPushshiftData(query, after, before)
-        # #big_data.append(data)
-        # iterateNum += 1
+        iterateNum += 1
 
     sentimentScore = sentimentScore / sentimentQuantity
     print("Score: "+str(sentimentScore))
