@@ -1,0 +1,170 @@
+[
+    {
+        "age group": {
+            "name": "Age group\n(years)",
+            "values": [
+                "< 18",
+                "18-44",
+                "45-64",
+                "65-74",
+                "75+",
+                "Unknown",
+                "Total"
+            ]
+        },
+        "subtables": [
+            {
+                "name": "No. of cases (% of total)",
+                "row_names": [
+                    "Totals",
+                    "Race missing/unspecified",
+                    "Race specified"
+                ],
+                "row_values": [
+                    [
+                        8930,
+                        179938,
+                        183722,
+                        53648,
+                        57397,
+                        13526,
+                        497161
+                    ],
+                    [
+                        7400,
+                        144315,
+                        141222,
+                        37973,
+                        36754,
+                        8965,
+                        376629
+                    ],
+                    [
+                        1530,
+                        35623,
+                        42500,
+                        15675,
+                        20643,
+                        4561,
+                        120532
+                    ]
+                ]
+            },
+            {
+                "name": "Among those with race specified",
+                "row_names": [
+                    "American Indian or Alaska Native",
+                    "Asian",
+                    "Black or African American",
+                    "Native Hawaiian or other Pacific Islander",
+                    "White",
+                    "Multiple/other",
+                    "Ethnicity missing/unspecified",
+                    "Ethnicity specified"
+                ],
+                "row_values": [
+                    [
+                        23,
+                        310,
+                        277,
+                        87,
+                        54,
+                        14,
+                        765
+                    ],
+                    [
+                        59,
+                        1823,
+                        2003,
+                        548,
+                        616,
+                        258,
+                        5307
+                    ],
+                    [
+                        437,
+                        11018,
+                        14218,
+                        5293,
+                        4601,
+                        931,
+                        36498
+                    ],
+                    [
+                        7,
+                        160,
+                        136,
+                        40,
+                        27,
+                        13,
+                        383
+                    ],
+                    [
+                        989,
+                        22170,
+                        25748,
+                        9674,
+                        15313,
+                        3341,
+                        77235
+                    ],
+                    [
+                        15,
+                        142,
+                        118,
+                        33,
+                        32,
+                        4,
+                        344
+                    ],
+                    [
+                        7387,
+                        145083,
+                        144184,
+                        40098,
+                        41098,
+                        7678,
+                        385528
+                    ],
+                    [
+                        1543,
+                        34855,
+                        39538,
+                        13550,
+                        16299,
+                        5848,
+                        111633
+                    ]
+                ]
+            },
+            {
+                "name": "Among those with ethnicity specified",
+                "row_names": [
+                    "Hispanic/Latino",
+                    "Non-Hispanic/Latino"
+                ],
+                "row_values": [
+                    [
+                        500,
+                        8637,
+                        7508,
+                        1603,
+                        1318,
+                        678,
+                        20244
+                    ],
+                    [
+                        1043,
+                        26218,
+                        32030,
+                        11947,
+                        14981,
+                        5170,
+                        91389
+                    ]
+                ]
+            }
+        ],
+        "caption": "Demographic characteristics of COVID-19 cases in the United States"
+    }
+]
